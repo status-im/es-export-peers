@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 from os import path
+from datetime import datetime
 from optparse import OptionParser
 
 from query import ESQueryPeers
@@ -59,7 +60,11 @@ def main():
 
     peers = []
     for index in esq.get_indices(opts.index_pattern):
+        # skip already injected indices
         if index in present_indices:
+            continue
+        # skip current day as it's incomplete
+        if index == datetime.now().strftime('logstash-%Y.%m.%d'):
             continue
         print('Index: {}'.format(index))
         peers.extend(esq.get_peers(index, opts.field, opts.max_size))
@@ -68,8 +73,8 @@ def main():
         print('Nothing to insert into database.')
         exit(0)
 
-    rval = psg.inject_peers(peers)
-    print(rval)
+    print('Injecting peers data into database...')
+    psg.inject_peers(peers)
 
 if __name__ == '__main__':
     main()
