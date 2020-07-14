@@ -54,14 +54,22 @@ def main():
         opts.db_port
     )
 
-    data = []
+    days = psg.get_present_days()
+    present_indices = ['logstash-{}'.format(d.replace('-', '.')) for d in days]
+
+    peers = []
     for index in esq.get_indices(opts.index_pattern):
+        if index in present_indices:
+            continue
         print('Index: {}'.format(index))
-        data.extend(esq.get_peers(index, opts.field, opts.max_size))
+        peers.extend(esq.get_peers(index, opts.field, opts.max_size))
 
-    rval = psg.get_most_recent_day()
+    if len(peers) == 0:
+        print('Nothing to insert into database.')
+        exit(0)
+
+    rval = psg.inject_peers(peers)
     print(rval)
-
 
 if __name__ == '__main__':
     main()

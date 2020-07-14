@@ -9,6 +9,15 @@ def remove_prefix(text, prefix):
 def hash_string(text):
     return hashlib.sha256(text.encode('utf-8')).hexdigest()
 
+class Peer:
+
+    def __init__(self, date, peer, count):
+        self.date = date
+        self.peer = peer
+        self.count = count
+
+    def to_tuple(self):
+        return (self.date, self.peer, self.count)
 
 class ESQueryPeers():
     def __init__(self, host='localhost', port=9200, timeout=1200):
@@ -40,10 +49,10 @@ class ESQueryPeers():
         # Collect results as list of dicts
         rval = []
         for bucket in aggs['peers']['buckets']:
-            rval.append({
-                'Date': remove_prefix(index, 'logstash-'),
-                'Peer': hash_string(bucket['key']),
-                'Count': bucket['doc_count'],
-            })
+            rval.append(Peer(
+                date = remove_prefix(index, 'logstash-'),
+                peer = hash_string(bucket['key']),
+                count = bucket['doc_count']
+            ))
 
         return rval

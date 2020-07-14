@@ -1,4 +1,5 @@
 import psycopg2
+from datetime import datetime
 
 class PGDatabase:
     _SCHEMA = """
@@ -20,6 +21,21 @@ class PGDatabase:
         self.c.execute(self._SCHEMA)
         self.db.commit()
 
-    def get_most_recent_day(self):
-        rval = self.c.execute('SELECT date FROM peers ORDER BY date LIMIT 1;')
+    def get_last_day(self):
+        self.c.execute('SELECT date FROM peers ORDER BY date DESC LIMIT 1;')
+        return self.c.fetchone()
+
+    def get_present_days(self):
+        self.c.execute('SELECT DISTINCT date FROM peers;')
+        return [d[0].strftime('%Y-%m-%d') for d in self.c.fetchall()]
+
+    def inject_peers(self, peers):
+        args = ','.join(
+            self.c.mogrify('(%s,%s,%s)', peer.to_tuple()).decode('utf-8')
+            for peer in peers
+        )
+        rval = self.c.execute(
+            'INSERT INTO peers(date, peer, count) VALUES {}'.format(args)
+        )
+        self.db.commit()
         return rval
