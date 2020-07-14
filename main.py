@@ -75,7 +75,10 @@ def main():
             LOG.debug('Skipping incomplete current day.')
             continue
         LOG.info('Index: {}'.format(index))
-        peers.extend(esq.get_peers(index, opts.field, opts.max_size))
+        rval = esq.get_peers(index, opts.field, opts.max_size)
+        if len(rval) == 0:
+            LOG.warning('No entries found!')
+        peers.extend(rval)
 
     if len(peers) == 0:
         LOG.info('Nothing to insert into database.')
