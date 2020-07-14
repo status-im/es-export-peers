@@ -3,6 +3,7 @@ from os import path
 from datetime import datetime
 from optparse import OptionParser
 
+from log import setup_custom_logger
 from query import ESQueryPeers
 from postgres import PGDatabase
 
@@ -32,6 +33,8 @@ def parse_opts():
                       help='Name of the field to count.')
     parser.add_option('-m', '--max-size', type='int', default=100000,
                       help='Max number of counts to find.')
+    parser.add_option('-l', '--log-level', default='INFO',
+                      help='Level of logging.')
     (opts, args) = parser.parse_args()
 
     if not opts.field:
@@ -42,6 +45,8 @@ def parse_opts():
 
 def main():
     (opts, args) = parse_opts()
+
+    LOG = setup_custom_logger('root', opts.log_level.upper())
 
     esq = ESQueryPeers(
         opts.es_host,
@@ -58,22 +63,25 @@ def main():
     days = psg.get_present_days()
     present_indices = ['logstash-{}'.format(d.replace('-', '.')) for d in days]
 
+    LOG.info('Querying ES cluster for peers...')
     peers = []
     for index in esq.get_indices(opts.index_pattern):
         # skip already injected indices
         if index in present_indices:
+            LOG.debug('Skipping existing index: %s', index)
             continue
         # skip current day as it's incomplete
         if index == datetime.now().strftime('logstash-%Y.%m.%d'):
+            LOG.debug('Skipping incomplete current day.')
             continue
-        print('Index: {}'.format(index))
+        LOG.info('Index: {}'.format(index))
         peers.extend(esq.get_peers(index, opts.field, opts.max_size))
 
     if len(peers) == 0:
-        print('Nothing to insert into database.')
+        LOG.info('Nothing to insert into database.')
         exit(0)
 
-    print('Injecting peers data into database...')
+    LOG.info('Injecting peers data into database...')
     psg.inject_peers(peers)
 
 if __name__ == '__main__':
