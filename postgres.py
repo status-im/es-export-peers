@@ -21,7 +21,7 @@ class PGDatabase:
         self.db.commit()
 
     def get_present_days(self):
-        self.c.execute('SELECT DISTINCT date FROM peers;')
+        self.c.execute('SELECT DISTINCT date FROM peers ORDER BY date;')
         return [d[0].strftime('%Y-%m-%d') for d in self.c.fetchall()]
 
     def inject_peers(self, peers):
