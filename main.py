@@ -8,7 +8,7 @@ from query import ESQueryPeers
 from postgres import PGDatabase
 
 HELP_DESCRIPTION = 'This generates a CSV with buckets of peer_ids for every day.'
-HELP_EXAMPLE = 'Example: ./unique_count.py -i "logstash-2019.11.*" -f peer_id'
+HELP_EXAMPLE = 'Example: ./unique_count.py -i "logstash-2019.11.*" -f "peer_id"'
 
 
 def parse_opts():
@@ -30,6 +30,8 @@ def parse_opts():
     parser.add_option('-i', '--index-pattern', default='logstash-*',
                       help='Patter for matching indices.')
     parser.add_option('-f', '--field', type='str', default='peer_id',
+                      help='Name of the field to count.')
+    parser.add_option('-F', '--fleet', type='str', default='eth.prod',
                       help='Name of the field to count.')
     parser.add_option('-m', '--max-size', type='int', default=100000,
                       help='Max number of counts to find.')
@@ -75,7 +77,12 @@ def main():
             LOG.debug('Skipping incomplete current day.')
             continue
         LOG.info('Index: {}'.format(index))
-        rval = esq.get_peers(index, opts.field, opts.max_size)
+        rval = esq.get_peers(
+            index=index,
+            field=opts.field,
+            fleet=opts.fleet,
+            max_query=opts.max_size
+        )
         if len(rval) == 0:
             LOG.warning('No entries found!')
         peers.extend(rval)

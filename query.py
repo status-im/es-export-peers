@@ -5,7 +5,6 @@ from elasticsearch import Elasticsearch
 def remove_prefix(text, prefix):
     return text[text.startswith(prefix) and len(prefix):]
 
-
 def hash_string(text):
     return hashlib.sha256(text.encode('utf-8')).hexdigest()
 
@@ -32,15 +31,24 @@ class ESQueryPeers():
     def get_indices(self, pattern='logstash-*'):
         return self.client.indices.get(index=pattern).keys()
 
-    def get_peers(self, index, field='peer_id', max_query=10000):
+    def get_peers(self, index, field='peer_id', fleet='eth.prod', max_query=10000):
         body = {
             'size': 0,  # Don't return actual values
-            'aggs': { 'peers': {
-                'terms': {
-                    'field': field,
-                    'size': 10000,
-                },
-            }, },
+            'aggs': {
+                'peers': {
+                    'filter': {
+                        'term': { 'fleet': fleet },
+                    },
+                    'aggs': {
+                        'fpeers': {
+                            'terms': {
+                                'field': field,
+                                'size': 10000,
+                            },
+                        },
+                    },
+                }, 
+            },
         }
         # Query
         resp = self.client.search(index=index, body=body)
@@ -48,7 +56,7 @@ class ESQueryPeers():
 
         # Collect results as list of dicts
         rval = []
-        for bucket in aggs['peers']['buckets']:
+        for bucket in aggs['peers']['fpeers']['buckets']:
             rval.append(Peer(
                 date = remove_prefix(index, 'logstash-'),
                 peer = hash_string(bucket['key']),
