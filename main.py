@@ -32,7 +32,7 @@ def parse_opts():
     parser.add_option('-f', '--field', type='str', default='peer_id',
                       help='Name of the field to count.')
     parser.add_option('-F', '--fleet', type='str', default='eth.prod',
-                      help='Name of the field to count.')
+                      help='Name of the fleet to query.')
     parser.add_option('-m', '--max-size', type='int', default=100000,
                       help='Max number of counts to find.')
     parser.add_option('-l', '--log-level', default='INFO',
