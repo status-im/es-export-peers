@@ -49,6 +49,8 @@ Options:
                         Name of the field to count.
   -F FLEET, --fleet=FLEET
                         Name of the fleet to query.
+  -D PROGRAM, --program=PROGRAM
+                        Name of the program to query.
   -m MAX_SIZE, --max-size=MAX_SIZE
                         Max number of counts to find.
   -l LOG_LEVEL, --log-level=LOG_LEVEL

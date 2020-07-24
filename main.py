@@ -29,10 +29,12 @@ def parse_opts():
                       help='PostgreSQL database name.')
     parser.add_option('-i', '--index-pattern', default='logstash-*',
                       help='Patter for matching indices.')
-    parser.add_option('-f', '--field', type='str', default='peer_id',
+    parser.add_option('-f', '--field', default='peer_id',
                       help='Name of the field to count.')
-    parser.add_option('-F', '--fleet', type='str', default='eth.prod',
+    parser.add_option('-F', '--fleet', default='eth.prod',
                       help='Name of the fleet to query.')
+    parser.add_option('-D', '--program', default='docker/statusd-mail',
+                      help='Name of the program to query.')
     parser.add_option('-m', '--max-size', type='int', default=100000,
                       help='Max number of counts to find.')
     parser.add_option('-l', '--log-level', default='INFO',
@@ -81,10 +83,12 @@ def main():
             index=index,
             field=opts.field,
             fleet=opts.fleet,
+            program=opts.program,
             max_query=opts.max_size
         )
         if len(rval) == 0:
             LOG.warning('No entries found!')
+        LOG.debug('Found: %s', len(rval))
         peers.extend(rval)
 
     if len(peers) == 0:

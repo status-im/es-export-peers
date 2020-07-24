@@ -31,13 +31,18 @@ class ESQueryPeers():
     def get_indices(self, pattern='logstash-*'):
         return self.client.indices.get(index=pattern).keys()
 
-    def get_peers(self, index, field='peer_id', fleet='eth.prod', max_query=10000):
+    def get_peers(self, index, field, fleet, program, max_query=10000):
         body = {
-            'size': 0,  # Don't return actual values
+            'size': 10, # Don't return actual values
             'aggs': {
                 'peers': {
                     'filter': {
-                        'term': { 'fleet': fleet },
+                        'bool': {
+                            'must': [
+                                { 'term': { 'fleet': fleet } },
+                                { 'term': { 'program': program } },
+                            ],
+                        },
                     },
                     'aggs': {
                         'fpeers': {
