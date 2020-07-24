@@ -48,7 +48,7 @@ class ESQueryPeers():
                         'fpeers': {
                             'terms': {
                                 'field': field,
-                                'size': 10000,
+                                'size': max_query,
                             },
                         },
                     },
