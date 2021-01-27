@@ -33,7 +33,7 @@ def parse_opts():
                       help='Name of the field to count.')
     parser.add_option('-F', '--fleet', default='eth.prod',
                       help='Name of the fleet to query.')
-    parser.add_option('-D', '--program', default='docker/statusd-mail',
+    parser.add_option('-D', '--program', default='docker/statusd-whisper-node',
                       help='Name of the program to query.')
     parser.add_option('-m', '--max-size', type='int', default=100000,
                       help='Max number of counts to find.')
