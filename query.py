@@ -34,23 +34,19 @@ class ESQueryPeers():
     def get_peers(self, index, field, fleet, program, max_query=10000):
         body = {
             'size': 10, # Don't return actual values
+            'query': {
+                'bool': {
+                    'filter': [
+                        { 'term': { 'fleet': fleet } },
+                        { 'term': { 'program': program } },
+                    ],
+                },
+            },
             'aggs': {
                 'peers': {
-                    'filter': {
-                        'bool': {
-                            'must': [
-                                { 'term': { 'fleet': fleet } },
-                                { 'term': { 'program': program } },
-                            ],
-                        },
-                    },
-                    'aggs': {
-                        'fpeers': {
-                            'terms': {
-                                'field': field,
-                                'size': max_query,
-                            },
-                        },
+                    'terms': {
+                        'field': field,
+                        'size': max_query,
                     },
                 }, 
             },
@@ -61,7 +57,7 @@ class ESQueryPeers():
 
         # Collect results as list of dicts
         rval = []
-        for bucket in aggs['peers']['fpeers']['buckets']:
+        for bucket in aggs['peers']['buckets']:
             rval.append(Peer(
                 date = remove_prefix(index, 'logstash-'),
                 peer = hash_string(bucket['key']),
