@@ -1,2 +1,2 @@
-elasticsearch==7.1.0
-psycopg2==2.8.5
+elasticsearch==7.17.6
+psycopg2==2.9.4
